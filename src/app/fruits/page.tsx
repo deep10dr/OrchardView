@@ -3,6 +3,12 @@
 import { useRef, useState, useMemo } from "react";
 import { FaSearch } from "react-icons/fa";
 import axios from "axios";
+interface details {
+  name: string;
+  scientificName: string;
+  slug: string;
+  description: string;
+}
 
 export default function Page() {
   const [query, setQuery] = useState("");
@@ -52,7 +58,7 @@ export default function Page() {
         </div>
       </div>
       <div className="bg-black/20 text-white md:w-100  w-80 overflow-y-hidden gap-10 grid grid-cols-2 rounded-2xl p-2">
-        {items.map((value, index, arr) => {
+        {items.map((value: details, index: number, arr) => {
           return (
             <div key={index}>
               <p>{value?.name}</p>
