@@ -4,6 +4,8 @@ import { useRef, useState, useCallback } from "react";
 import { FaSearch } from "react-icons/fa";
 import { PiSpinnerBold } from "react-icons/pi";
 import axios from "axios";
+import Lottie from "lottie-react";
+import lost from "../animation/lost.json";
 
 interface Details {
   name: string;
@@ -90,33 +92,40 @@ export default function Page() {
       </div>
 
       {/* Error Message */}
-      {error && <p className="text-red-600 font-medium text-center">{error}</p>}
+      {error ? (
+        <div className="w-full flex justify-center items-center flex-col">
+          <p className="text-red-600 font-medium text-center">{error}</p>
+          <div className="">
+            <Lottie animationData={lost} loop={true} step={1} />
+          </div>
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 w-full max-w-6xl p-2 overflow-y-auto md:h-[500px]">
+          {!loading &&
+            !error &&
+            items.length > 0 &&
+            items.map((item, index) => (
+              <div
+                key={index}
+                className="bg-white text-black rounded-xl p-4 shadow hover:shadow-xl transition duration-300 
+              "
+              >
+                <h2 className="text-lg font-bold">{item.name}</h2>
+                <p className="text-sm italic text-gray-700">
+                  {item.scientificName}
+                </p>
+                <p className="text-sm text-gray-600 mb-2">{item.slug}</p>
+                <p className="text-xs text-gray-800">{item.description}</p>
+              </div>
+            ))}
 
-      {/* Results */}
-      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 w-full max-w-6xl p-2 overflow-y-auto md:h-[500px]">
-        {!loading &&
-          !error &&
-          items.length > 0 &&
-          items.map((item, index) => (
-            <div
-              key={index}
-              className="bg-white text-black rounded-xl p-4 shadow hover:shadow-xl transition duration-300 "
-            >
-              <h2 className="text-lg font-bold">{item.name}</h2>
-              <p className="text-sm italic text-gray-700">
-                {item.scientificName}
-              </p>
-              <p className="text-sm text-gray-600 mb-2">{item.slug}</p>
-              <p className="text-xs text-gray-800">{item.description}</p>
-            </div>
-          ))}
-
-        {!loading && !error && items.length === 0 && (
-          <p className="text-center col-span-full text-gray-500">
-            Start typing a fruit name to search...
-          </p>
-        )}
-      </div>
+          {!loading && !error && items.length === 0 && (
+            <p className="text-center col-span-full text-gray-500">
+              Start typing a fruit name to search...
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
