@@ -59,7 +59,7 @@ export default function Page() {
   return (
     <div className="w-full min-h-screen bg-gray-100 flex flex-col items-center py-10 px-4">
       {/* Search Box */}
-      <div className="flex h-12 rounded-3xl gap-2 items-center bg-black/20 px-4 shadow-lg mb-6 w-full max-w-xl">
+      <div className="flex h-12 rounded-3xl gap-2 items-center bg-black/20 px-2 shadow-lg mb-6 w-full max-w-xl">
         <input
           ref={inputRef}
           type="text"
@@ -74,7 +74,7 @@ export default function Page() {
         <button
           onClick={handleSearch}
           disabled={loading}
-          className="bg-[#FF5252] text-white p-2 rounded-full hover:shadow-2xl transition duration-200"
+          className="bg-[#FF5252] text-white p-[10px] rounded-full hover:shadow-2xl transition duration-200 h-max "
         >
           {loading ? (
             <PiSpinnerBold className="animate-spin text-xl" />
