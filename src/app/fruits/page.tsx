@@ -1,9 +1,11 @@
 "use client";
 
-import { useRef, useState, useMemo } from "react";
+import { useRef, useState, useCallback } from "react";
 import { FaSearch } from "react-icons/fa";
+import { PiSpinnerBold } from "react-icons/pi";
 import axios from "axios";
-interface details {
+
+interface Details {
   name: string;
   scientificName: string;
   slug: string;
@@ -12,63 +14,104 @@ interface details {
 
 export default function Page() {
   const [query, setQuery] = useState("");
-  const inputRef = useRef(null);
-  const [items, setItems] = useState([]);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [items, setItems] = useState<Details[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  async function handleSearch() {
-    const option = {
-      method: "GET",
-      url: "https://nutritional-api.p.rapidapi.com/search",
-      params: { q: query },
-      headers: {
-        "x-rapidapi-key": "4c5be6c858mshb074e95e20315dcp1d16a5jsnd5dc2d873367",
-        "x-rapidapi-host": "nutritional-api.p.rapidapi.com",
-      },
-    };
-    axios
-      .request(option)
-      .then((value) => {
-        console.log(value.data[0].name);
-        setItems(value.data);
-      })
-      .catch((error) => {
-        setItems([]);
-      });
-  }
+  const handleSearch = useCallback(async () => {
+    if (!query.trim()) {
+      setError("Please enter a fruit name.");
+      setItems([]);
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setItems([]);
+
+    try {
+      const res = await axios.get(
+        "https://nutritional-api.p.rapidapi.com/search",
+        {
+          params: { q: query },
+          headers: {
+            "x-rapidapi-key":
+              "4c5be6c858mshb074e95e20315dcp1d16a5jsnd5dc2d873367",
+            "x-rapidapi-host": "nutritional-api.p.rapidapi.com",
+          },
+        }
+      );
+
+      const data = res.data as Details[];
+      if (!data.length) {
+        setError("No results found.");
+      } else {
+        setItems(data);
+      }
+    } catch (err) {
+      setError("Failed to fetch data. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }, [query]);
 
   return (
-    <div className="w-full min-h-screen flex flex-col-reverse items-center gap-10">
-      <div className="p-2 flex h-12 rounded-3xl gap-2 items-center bg-black/20 mb-10">
+    <div className="w-full min-h-screen bg-gray-100 flex flex-col items-center py-10 px-4">
+      {/* Search Box */}
+      <div className="flex h-12 rounded-3xl gap-2 items-center bg-black/20 px-4 shadow-lg mb-6 w-full max-w-xl">
         <input
           ref={inputRef}
           type="text"
-          placeholder="Enter the fruits name search"
-          className="p-2 shadow-2xl rounded-2xl focus:ring-0 hover:ring-0 border-none focus:outline-none"
+          placeholder="Enter the fruit's name..."
+          className="flex-grow bg-transparent text-black placeholder:text-gray-700 p-2 focus:outline-none"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") handleSearch();
           }}
         />
-        <div
+        <button
           onClick={handleSearch}
-          className="bg-[#FF5252] text-white p-3 rounded-3xl cursor-pointer hover:shadow-2xl "
+          disabled={loading}
+          className="bg-[#FF5252] text-white p-2 rounded-full hover:shadow-2xl transition duration-200"
         >
-          <FaSearch />
-        </div>
+          {loading ? (
+            <PiSpinnerBold className="animate-spin text-xl" />
+          ) : (
+            <FaSearch className="text-lg" />
+          )}
+        </button>
       </div>
-      <div className="bg-black/20 text-white md:w-100  w-80 overflow-y-hidden gap-10 grid grid-cols-2 rounded-2xl p-2">
-        {items.map((value: details, index: number, arr) => {
-          return (
-            <div key={index}>
-              <p>{value?.name}</p>
-              <p>{value?.scientificName}</p>
-              <p>{value?.slug}</p>
-              <p>{value?.description}</p>
-            </div>
-          );
-        })}
+
+      {/* Error Message */}
+      {error && (
+        <p className="text-red-600 font-medium mb-4 text-center">{error}</p>
+      )}
+
+      {/* Results */}
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 w-full max-w-6xl">
+        {items.map((item, index) => (
+          <div
+            key={index}
+            className="bg-white text-black rounded-xl p-4 shadow hover:shadow-xl transition duration-300"
+          >
+            <h2 className="text-lg font-bold">{item.name}</h2>
+            <p className="text-sm italic text-gray-700">
+              {item.scientificName}
+            </p>
+            <p className="text-sm text-gray-600 mb-2">{item.slug}</p>
+            <p className="text-xs text-gray-800">{item.description}</p>
+          </div>
+        ))}
       </div>
+
+      {/* No Results Placeholder */}
+      {!loading && !items.length && !error && (
+        <p className="text-gray-500 mt-10">
+          Start typing a fruit name to search...
+        </p>
+      )}
     </div>
   );
 }
